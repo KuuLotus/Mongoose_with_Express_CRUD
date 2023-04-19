@@ -27,9 +27,14 @@ app.use(methodOverride("_method"));
 const categories = ["果物", "野菜", "乳製品", "キノコ類"];
 
 app.get("/products", async (req, res) => {
-  const products = await Product.find({});
-  console.log(products);
-  res.render("products/index", { products });
+  const { category } = req.query;
+  if (category) {
+    const products = await Product.find({ category });
+    res.render("products/index", { products, category });
+  } else {
+    const products = await Product.find({});
+    res.render("products/index", { products, category: "全" });
+  }
 });
 
 app.get("/products/new", (req, res) => {
@@ -40,14 +45,12 @@ app.post("/products", async (req, res) => {
   console.log(req.body);
   const newProduct = new Product(req.body);
   await newProduct.save();
-  console.log(newProduct);
   res.redirect(`products/${newProduct._id}`);
 });
 
 app.get("/products/:id", async (req, res) => {
   const { id } = req.params;
   const product = await Product.findById(id);
-  console.log(product);
   res.render("products/show", { product });
 });
 
